@@ -1,0 +1,133 @@
+<html>
+
+<head>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+	</head>
+	<body>
+		<div class = 'pane'>
+		<h1>{{ bookCategory.name }}</h1>
+
+		{% with messages = get_flashed_messages() %}
+      {% if messages %}
+
+        <ul>
+        {% for message in messages %}
+            <li> <strong> {{ message }} </strong> </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% if items !=[] %}
+
+		<a href = "{{url_for('newBookItem', bookCategory_id = bookCategory.id )}}">Create New Item</a>
+	</br></br>
+
+	<h2>Category1</h2>
+
+		{% for i in items %}
+		{% if i.course == 'Appetizer' %}
+
+		<p>{{i.title}}</p>
+
+
+		<p>{{i.author}}</p>
+
+
+
+		<a href='{{url_for('editCategoryItem', bookCategory_id = bookCategory.id, bookItem_id=i.id ) }}' >Edit</a>
+	</br>
+	<a href='{{url_for('deleteMenuItem', bookCategory_id = bookCategory.id, bookItem_id=i.id ) }}' >Delete</a>
+</br>
+</br>
+		{% endif %}
+
+		{% endfor %}
+
+
+
+		</br></br>
+
+	<h2>Category2</h2>
+
+			{% for i in items %}
+			{% if i.course == 'Appetizer' %}
+
+			<p>{{i.title}}</p>
+
+
+			<p>{{i.author}}</p>
+
+
+
+			<a href='{{url_for('editCategoryItem', bookCategory_id = bookCategory.id, bookItem_id=i.id ) }}' >Edit</a>
+		</br>
+		<a href='{{url_for('deleteMenuItem', bookCategory_id = bookCategory.id, bookItem_id=i.id ) }}' >Delete</a>
+	</br>
+	</br>
+			{% endif %}
+
+			{% endfor %}
+
+
+
+		</br></br>
+
+	<h2>Category3</h2>
+
+			{% for i in items %}
+			{% if i.course == 'Appetizer' %}
+
+			<p>{{i.title}}</p>
+
+
+			<p>{{i.author}}</p>
+
+
+
+			<a href='{{url_for('editCategoryItem', bookCategory_id = bookCategory.id, bookItem_id=i.id ) }}' >Edit</a>
+		</br>
+		<a href='{{url_for('deleteMenuItem', bookCategory_id = bookCategory.id, bookItem_id=i.id ) }}' >Delete</a>
+	</br>
+	</br>
+			{% endif %}
+
+			{% endfor %}
+
+
+
+
+		</br></br>
+
+	<h2>Category4</h2>
+
+
+			{% for i in items %}
+			{% if i.course == 'Appetizer' %}
+
+			<p>{{i.title}}</p>
+
+
+			<p>{{i.author}}</p>
+
+
+
+			<a href='{{url_for('editCategoryItem', bookCategory_id = bookCategory.id, bookItem_id=i.id ) }}' >Edit</a>
+		</br>
+		<a href='{{url_for('deleteMenuItem', bookCategory_id = bookCategory.id, bookItem_id=i.id ) }}' >Delete</a>
+	</br>
+	</br>
+			{% endif %}
+
+			{% endfor %}
+
+
+
+		{% else %}
+		<p> You currently have no Book items. <p>
+		<a href = "{{url_for('newBookItem', bookCategory_id = bookCategory.id )}}">Create New Item</a>
+			{% endif %}
+</div>
+	</body>
+
+</html>

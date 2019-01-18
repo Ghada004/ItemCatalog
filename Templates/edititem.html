@@ -1,0 +1,27 @@
+<html>
+
+<head>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+	</head>
+
+<body><h1> Edit Book Item </h1>
+
+<form action="#" method = 'post'>
+
+
+	<p>Title:</p>
+		<input type ='text' size='30' name='name' placeholder = '{{bookItem.title }}'>
+	<p>author:</p>
+		<input type ='text' size='30' name='description' placeholder = '{{bookItem.author}}'>
+	
+
+
+<input type='submit' value='Edit'>
+
+
+<a href = '#'> Cancel </a>
+
+
+</form>
+</body>
+</html>
