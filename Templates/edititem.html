@@ -1,27 +1,33 @@
-<html>
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+	<div class="row divider green">
+		<div class="col-md-12"></div>
+	</div>
+	<div class="row banner menu">
+		<div class="col-md-11 col-md-offset-1 padding-none">
+			<h1>Edit Book Item</h1>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 col-md-offset-1 padding-top">
+			<form action="#" method = "post">
+				<div class="form-group">
+					<label for="title">Title:</label>
+					<input type ="text" maxlength="100" class="form-control" name="title" value="{{bookItem.title }}">
 
-<head>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
-	</head>
-
-<body><h1> Edit Book Item </h1>
-
-<form action="#" method = 'post'>
-
-
-	<p>Title:</p>
-		<input type ='text' size='30' name='name' placeholder = '{{bookItem.title }}'>
-	<p>author:</p>
-		<input type ='text' size='30' name='description' placeholder = '{{bookItem.author}}'>
-	
-
-
-<input type='submit' value='Edit'>
-
-
-<a href = '#'> Cancel </a>
-
-
-</form>
-</body>
-</html>
+					<label for="author">Author:</label>
+					<textarea class="form-control" maxlength="250" rows="3" name="author">{{bookItem.author}}</textarea>
+					
+					</div>
+					<button type="submit" class="btn btn-default" id="submit" type="submit">
+					<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>Save</button>
+					<a href = '{{url_for('showBookCategory')}}'>
+						<button class="btn btn-default delete" type="button">
+						<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Cancel</button>
+					</a>
+				</div>
+			</form>
+		</div>
+	</div>
+{% endblock %}
