@@ -1,11 +1,9 @@
-#Books DB
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from database_setup import User, Base, BookCategory, BookItem
 
-engine = create_engine('sqlite:///bookcategorywithusers.db')
+engine = create_engine('sqlite:///database_setup.db')
 # Bind the engine to the metadata of the Base class so that the
 # declaratives can be accessed through a DBSession instance
 Base.metadata.bind = engine
@@ -24,8 +22,7 @@ session = DBSession()
 
 
 # Create dummy user
-User1 = User(name="Alex", email="Alex@example.com",
-             photo='https://app.box.com/s/c1rfi7yyc55umhs4z6tgi69wudur2vrf')
+User1 = User(name="Ghada", email="Classgh@Gmail.com")
 session.add(User1)
 session.commit()
 
@@ -41,7 +38,7 @@ BookItem1 = BookItem(user_id=1, title="Kafka on the Shore", author="Haruki Murak
 session.add(BookItem1)
 session.commit()
 
-BookItem2 = BookItem(user_id=1, title="harp Objects", author="Gillian Flynn", bookCategory=category1)
+BookItem2 = BookItem(user_id=1, title="Sharp Objects", author="Gillian Flynn", bookCategory=category1)
 
 session.add(BookItem2)
 session.commit()
@@ -69,7 +66,7 @@ session.add(BookItem2)
 session.commit()
 
 
-BookItem3 = BookItem(user_id=1, title="Tuesdays with Morrie", author="Mitch Albom'", bookCategory=category2)
+BookItem3 = BookItem(user_id=1, title="Tuesdays with Morrie", author="Mitch Albom", bookCategory=category2)
 
 session.add(BookItem3)
 session.commit()
@@ -79,10 +76,10 @@ session.commit()
 
 category3 = BookCategory(user_id=1, name="Literature")
 
-session.add(category2)
+session.add(category3)
 session.commit()
 
-BookItem1 = BookItem(user_id=1, title="TO KILL A MOCKINGBIRD", author="Harper Lee", bookCategory=category3)
+BookItem1 = BookItem(user_id=1, title="To Kill a Mockingbird", author="Harper Lee", bookCategory=category3)
 
 session.add(BookItem1)
 session.commit()
@@ -93,7 +90,7 @@ BookItem2 = BookItem(user_id=1, title="Animal Farm", author="George Orwell", boo
 session.add(BookItem2)
 session.commit()
 
-print "Books items!"
+print "Books items Added!"
 
 # bookCategory = {'name': 'Fiction', 'id':'1'}
 

@@ -12,7 +12,59 @@
 	<div class="row banner main">
 		<div class="col-md-1"></div>
 		<div class="col-md-11 padding-none">
-			<h1>Book Category</h1>
+			<h1>Book Categories</h1>
+
+			<h2> Fiction,          Inspirational,         Literature </h2 >
+
+
+<a href="#" onclick="toggle_visibility('book1');"> Fiction Books. </a>
+<div id="book1"> <ul>
+<li> Title: Kafka on the Shore - Author: Haruki Murakami  </li>
+<li> Title: Sharp Objects - Author: Gillian Flynn </li>
+<li> Title: The Girl on the Train" - Author: Paula Hawkins</li>
+</ul></div>
+
+<a href="#" onclick="toggle_visibility('book2');"> Inspirational Books. </a>
+<div id="book2"> <ul>
+<li> Title: If I Could Tell You Just One Thing - Author: Richard Reed  </li>
+<li> Title: The Alchemist - Author: Paulo Coelho </li>
+<li> Title: Tuesdays with Morrie - Author: Mitch Albom </li>
+</ul></div>
+
+<a href="#" onclick="toggle_visibility('book3');"> Literature Books. </a>
+<div id="book3"> <ul>
+<li> Title: To Kill a Mockingbird - Author: Harper Lee </li>
+<li> Title: Animal Farm - Author: George Orwell </li>
+</ul></div>
+
+
+<script type="text/javascript">
+<!--
+    function toggle_visibility(id) {
+       var e = document.getElementById(id);
+       if(e.style.display == 'block')
+          e.style.display = 'none';
+       else
+          e.style.display = 'block';
+    }
+
+		function toggle_visibility2(id2) {
+			 var e = document.getElementById(id2);
+			 if(e.style.display == 'block')
+					e.style.display = 'none';
+			 else
+					e.style.display = 'block';
+		}
+
+		function toggle_visibility3(id3) {
+			 var e = document.getElementById(id3);
+			 if(e.style.display == 'block')
+					e.style.display = 'none';
+			 else
+					e.style.display = 'block';
+		}
+</script>
+
 		</div>
 	</div>
 
@@ -40,7 +92,7 @@
 		<div class="col-md-1"></div>
 	</div>
 	{% for bookCategory in bookCategories %}
-		<a href = "{{url_for('showMenu', restaurant_id = restaurant.id)}}">
+		<a href = "{{url_for('showCategoryItem', bookCategory_id = bookCategory.id)}}">
 			<div class="row">
 				<div class="col-md-1"></div>
 					<div class="col-md-10 restaurant-list">
