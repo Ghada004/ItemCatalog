@@ -23,8 +23,8 @@ class User(Base):
             'id': self.id,
         }
 
-class BookCategory(Base):
-    __tablename__ = 'bookCategory'
+class Category(Base):
+    __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
@@ -40,14 +40,14 @@ class BookCategory(Base):
         }
 
 
-class BookItem(Base):
-    __tablename__ = 'bookItem'
+class Item(Base):
+    __tablename__ = 'item'
 
     id = Column(Integer, primary_key=True)
     title = Column(String(80), nullable=False)
     author = Column(String(250))
-    bookCategory_id = Column(Integer, ForeignKey('bookCategory.id'))
-    bookCategory = relationship(BookCategory)
+    category_id = Column(Integer, ForeignKey('category.id'))
+    category = relationship(Category)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
 

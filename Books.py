@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from database_setup import User, Base, BookCategory, BookItem
+from database_setup import User, Base, Category, Item
 
 engine = create_engine('sqlite:///database_setup.db')
 # Bind the engine to the metadata of the Base class so that the
@@ -21,52 +21,52 @@ session = DBSession()
 
 
 
-# Create dummy user
+# Create user
 User1 = User(name="Ghada", email="Classgh@Gmail.com")
 session.add(User1)
 session.commit()
 
 
 # Book Category #1
-category1 = BookCategory(user_id=1, name="Fiction")
+category1 = Category(user_id=1, name="Fiction")
 
 session.add(category1)
 session.commit()
 
-BookItem1 = BookItem(user_id=1, title="Kafka on the Shore", author="Haruki Murakami", bookCategory=category1)
+BookItem1 = Item(user_id=1, title="Kafka on the Shore", author="Haruki Murakami", category=category1)
 
 session.add(BookItem1)
 session.commit()
 
-BookItem2 = BookItem(user_id=1, title="Sharp Objects", author="Gillian Flynn", bookCategory=category1)
+BookItem2 = Item(user_id=1, title="Sharp Objects", author="Gillian Flynn", category=category1)
 
 session.add(BookItem2)
 session.commit()
 
-BookItem3 = BookItem(user_id=1, title="The Girl on the Train", author="Paula Hawkins", bookCategory=category1)
+BookItem3 = Item(user_id=1, title="The Girl on the Train", author="Paula Hawkins", category=category1)
 
 session.add(BookItem3)
 session.commit()
 
 # Book Category #2
 
-category2 = BookCategory(user_id=1, name="Inspirational")
+category2 = Category(user_id=1, name="Inspirational")
 
 session.add(category2)
 session.commit()
 
-BookItem1 = BookItem(user_id=1, title="If I Could Tell You Just One Thing", author="Richard Reed", bookCategory=category2)
+BookItem1 = Item(user_id=1, title="If I Could Tell You Just One Thing", author="Richard Reed", category=category2)
 
 session.add(BookItem1)
 session.commit()
 
-BookItem2 = BookItem(user_id=1, title="The Alchemist", author="Paulo Coelho", bookCategory=category2)
+BookItem2 = Item(user_id=1, title="The Alchemist", author="Paulo Coelho", category=category2)
 
 session.add(BookItem2)
 session.commit()
 
 
-BookItem3 = BookItem(user_id=1, title="Tuesdays with Morrie", author="Mitch Albom", bookCategory=category2)
+BookItem3 = Item(user_id=1, title="Tuesdays with Morrie", author="Mitch Albom", category=category2)
 
 session.add(BookItem3)
 session.commit()
@@ -74,18 +74,18 @@ session.commit()
 
 # Book Category #3
 
-category3 = BookCategory(user_id=1, name="Literature")
+category3 = Category(user_id=1, name="Literature")
 
 session.add(category3)
 session.commit()
 
-BookItem1 = BookItem(user_id=1, title="To Kill a Mockingbird", author="Harper Lee", bookCategory=category3)
+BookItem1 = Item(user_id=1, title="To Kill a Mockingbird", author="Harper Lee", category=category3)
 
 session.add(BookItem1)
 session.commit()
 
 
-BookItem2 = BookItem(user_id=1, title="Animal Farm", author="George Orwell", bookCategory=category3)
+BookItem2 = Item(user_id=1, title="Animal Farm", author="George Orwell", category=category3)
 
 session.add(BookItem2)
 session.commit()

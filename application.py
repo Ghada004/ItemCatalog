@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, BookCategory, BookItem, User
+from database_setup import Base, Category, Item, User
 from flask import session as login_session
 import random
 import string
@@ -14,17 +14,15 @@ from flask import make_response
 import requests
 from sqlalchemy.pool import SingletonThreadPool
 
-
 app = Flask(__name__)
 
-
-
-CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
+CLIENT_ID = json.loads(
+    open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "ItemCatalog"
 
-# Connect to Database and create database session)
-engine = create_engine('sqlite:///database_setup.db?check_same_thread=False', poolclass=SingletonThreadPool)
 
+# Connect to Database and create database session
+engine = create_engine('sqlite:///database_setup.db?check_same_thread=False', poolclass=SingletonThreadPool)
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -48,7 +46,7 @@ def gconnect():
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    # Obtain authorization code
+    # Obtain authorization code, now compatible with Python3
     request.get_data()
     code = request.data.decode('utf-8')
 
@@ -58,16 +56,21 @@ def gconnect():
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
-        response = make_response(json.dumps('Failed to upgrade the authorization code.'), 401)
+        response = make_response(
+            json.dumps('Failed to upgrade the authorization code.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
 
-         # Check that the access token is valid.
+    # Check that the access token is valid.
     access_token = credentials.access_token
     url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
            % access_token)
+    # Submit request, parse response - Python3 compatible
     h = httplib2.Http()
-    result = json.loads(h.request(url, 'GET')[1])
+    response = h.request(url, 'GET')[1]
+    str_response = response.decode('utf-8')
+    result = json.loads(str_response)
+
     # If there was an error in the access token info, abort.
     if result.get('error') is not None:
         response = make_response(json.dumps(result.get('error')), 500)
@@ -77,7 +80,8 @@ def gconnect():
     # Verify that the access token is used for the intended user.
     gplus_id = credentials.id_token['sub']
     if result['user_id'] != gplus_id:
-        response = make_response(json.dumps("Token's user ID doesn't match given user ID."), 401)
+        response = make_response(
+            json.dumps("Token's user ID doesn't match given user ID."), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -85,55 +89,60 @@ def gconnect():
     if result['issued_to'] != CLIENT_ID:
         response = make_response(
             json.dumps("Token's client ID does not match app's."), 401)
-        print "Token's client ID does not match app's."
         response.headers['Content-Type'] = 'application/json'
         return response
 
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),200)
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
     # Store the access token in the session for later use.
-    login_session['access_token'] = credentials.access_token
+    login_session['access_token'] = access_token
     login_session['gplus_id'] = gplus_id
 
     # Get user info
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
-    params = {'access_token': credentials.access_token, 'alt': 'json'}
+    params = {'access_token': access_token, 'alt': 'json'}
     answer = requests.get(userinfo_url, params=params)
 
     data = answer.json()
 
     login_session['username'] = data['name']
+    login_session['picture'] = data['picture']
     login_session['email'] = data['email']
-    # ADD PROVIDER TO LOGIN SESSION
-    # login_session['provider'] = 'google'
 
-        # see if user exists, if it doesn't make a new one
-    user_id = getUserID(data["email"])
+    # see if user exists, if it doesn't make a new one
+    user_id = getUserID(login_session['email'])
     if not user_id:
         user_id = createUser(login_session)
     login_session['user_id'] = user_id
-
 
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
     output += '!</h1>'
     output += '<img src="'
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += login_session['picture']
+    output += """
+    style = "width: 300px;
+             height: 300px;
+             border-radius: 150px;
+             -webkit-border-radius: 150px;
+             -moz-border-radius: 150px;">
+            """
     flash("you are now logged in as %s" % login_session['username'])
-    print "done!"
     return output
 
 # User Helper Functions
 
 
 def createUser(login_session):
-    newUser = User(name=login_session['username'], email=login_session['email'])
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
@@ -152,152 +161,152 @@ def getUserID(email):
     except:
         return None
 
-# DISCONNECT
-
+# DISCONNECT - Revoke a current user's token and reset their login_session
 @app.route('/gdisconnect')
 def gdisconnect():
-    # Only disconnect a connected user.
     access_token = login_session.get('access_token')
     if access_token is None:
+        print 'Access Token is None'
         response = make_response(
             json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+    print 'In gdisconnect access token is %s', access_token
+    print 'User name is: '
+    print login_session['username']
+    print 'hlkeakfkjkkkkk',login_session['access_token']
+    url = ('https://accounts.google.com/o/oauth2/revoke?token=%s'
+           % login_session['access_token'])
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
+    print 'result is '
+    print result
     if result['status'] == '200':
         del login_session['access_token']
         del login_session['gplus_id']
         del login_session['username']
         del login_session['email']
-
-        # response = make_response(json.dumps('Successfully disconnected.'), 200)
-        # response.headers['Content-Type'] = 'application/json'
-        response = redirect(url_for('showBookCategory'))
-        flash("You are Successfully logged out.")
-        return response
+        del login_session['picture']
+        response = make_response(
+            json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+        return redirect('/category')
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
-# BookCategory - bookItem
-
-@app.route('/bookCategory/<int:bookCategory_id>/bookItem/JSON')
-def bookCategoryJSON(bookCategory_id):
-    bookCategory = session.query(BookCategory).filter_by(id=bookCategory_id).one()
-    items = session.query(BookItem).filter_by(bookCategory_id=bookCategory_id).all()
-    return jsonify(BookItem=[i.serialize for i in items])
-
-
-@app.route('/bookCategory/<int:bookCategory_id>/bookItem/<int:bookItem_id>/JSON')
-def ItemJSON(bookCategory_id, BookItem_id):
-    Book_Item = session.query(BookItem).filter_by(id=BookItem_id).one()
-    return jsonify(Book_Item=Book_Item.serialize)
+# JSON APIs to view  Information
+@app.route('/category/<int:category_id>/item/JSON')
+def categoryJSON(category_id):
+    category = session.query(Category).filter_by(id=category_id).one()
+    items = session.query(Item).filter_by(category_id=category_id).all()
+    return jsonify(Items=[i.serialize for i in items])
 
 
-@app.route('/bookCategory/JSON')
-def bookCategoriesJSON():
-    bookCategories = session.query(BookCategory).all()
-    return jsonify(bookCategories=[b.serialize for b in bookCategories])
+@app.route('/category/<int:category_id>/item/<int:item_id>/JSON')
+def itemJSON(category_id, item_id):
+    item = session.query(Item).filter_by(id=item_id).one()
+    return jsonify(Item=Item.serialize)
 
-# SHOW All Book Categories
 
+@app.route('/category/JSON')
+def categoriesJSON():
+    categories = session.query(categories).all()
+    return jsonify(categories=[c.serialize for c in categories])
+
+
+# Show all Categories
 @app.route('/')
-@app.route('/bookCategory/')
-def showBookCategory():
-    bookCategories = session.query(BookCategory).order_by(asc(BookCategory.name))
-    items = session.query(BookItem).order_by(BookItem.id.desc()).limit(8)
-
-    return render_template('category.html', bookCategories=bookCategories, items=items)
-
-
-
-# show  Book items
-@app.route('/bookCategory/<int:bookCategory_id>/')
-@app.route('/bookCategory/<int:bookCategory_id>/bookItem/')
-def showCategoryItem(bookCategory_id):
-    bookCategory = session.query(BookCategory).filter_by(id=bookCategory_id).one()
-    creator = getUserInfo(bookCategory.user_id)
-    items = session.query(BookItem).filter_by(bookCategory_id=bookCategory_id).all()
-    if 'username' not in login_session or creator.id != login_session['user_id']:
-        return render_template('newitem.html', items=items, bookCategory=bookCategory, creator=creator)
+@app.route('/category/')
+def showcategories():
+    categories = session.query(Category).order_by(asc(Category.name))
+    if 'username' not in login_session:
+        return render_template('publicCategory.html', categories=categories)
     else:
-        return render_template('items.html', items=items, bookCategory=bookCategory, creator=creator)
+        return render_template('category.html', categories=categories)
 
-# Create a new Book Category item
 
-@app.route('/bookCategory/<int:bookCategory_id>/bookItem/new/', methods=['GET', 'POST'])
-def newBookItem(bookCategory_id):
+# Show a Book Items
+
+@app.route('/category/<int:category_id>/')
+@app.route('/category/<int:category_id>/item/')
+def showItem(category_id):
+    category = session.query(Category).filter_by(id=category_id).one()
+    permissions = []
+    items = session.query(Item).filter_by(
+        category_id=category_id).all()
+    if login_session['user_id']:
+        for count in range(0,len(items)):
+            if items[count].user_id == login_session['user_id']:
+                permissions.append(True)
+            else:
+                permissions.append(False)
+
+    if 'username' not in login_session:
+        return render_template('publicitem.html', items=items, category=category)
+    else:
+        return render_template('items.html', items=items,permissions=permissions, category=category)
+
+
+# Create a new Book item
+@app.route('/category/item/new/', methods=['GET', 'POST'])
+def newBookItem():
     if 'username' not in login_session:
         return redirect('/login')
-    bookCategory = session.query(BookCategory).filter_by(id=bookCategory_id).one()
-    if login_session['user_id'] != bookCategory.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to add Book items to this  Category. Please create your own Book in order to add items.');}</script><body onload='myFunction()'>"
+    categories = session.query(Category).all()
     if request.method == 'POST':
-        newItem = bookItem(title=request.form['title'], author=request.form['author'], bookCategory_id=bookCategory_id)
+        newItem = Item(title=request.form['title'], author=request.form['author'], category_id=request.form['category'], user_id=login_session['user_id'])
         session.add(newItem)
         session.commit()
-        return redirect(url_for('showCategoryItem', bookCategory_id=bookCategory_id))
+        flash('New Book %s Item Successfully Created' % (newItem.title))
+        return redirect(url_for('showItem', category_id=request.form['category']))
     else:
-        categories = session.query(Category).all()
-        return render_template('newitem.html', bookCategory_id=bookCategory_id)
+        return render_template('newitem.html', categories= categories)
 
+# Edit a menu item
 
-# Edit a Book item
-@app.route('/bookCategory/<int:bookCategory_id>/bookItem/<int:bookItem_id>/edit', methods=['GET', 'POST'])
-def editCategoryItem(bookCategory_id, bookItem_id):
-    editedItem = session.query(bookItem).filter_by(id=bookItem_id).one()
-    bookCategory = session.query(BookCategory).filter_by(id=bookCategory_id).one()
-    if login_session['user_id'] != bookCategory.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to edit menu Book to this Category. Please create your own Book in order to edit items.');}</script><body onload='myFunction()'>"
+@app.route('/category/<int:category_id>/item/<int:item_id>/edit', methods=['GET', 'POST'])
+def editItem(category_id, item_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+    editedItem = session.query(Item).filter_by(id=item_id).one()
+    category = session.query(Category).filter_by(id=category_id).one()
+    if login_session['user_id'] != category.user_id:
+        return "<script>function myFunction() {alert('You are not authorized to edit Book items.');}</script><body onload='myFunction()'>"
     if request.method == 'POST':
         if request.form['title']:
             editedItem.title = request.form['title']
         if request.form['author']:
-            editedItem.author = request.form['author']
+            editedItem.description = request.form['author']
         session.add(editedItem)
         session.commit()
         flash('Book Item Successfully Edited')
-        return redirect(url_for('showCategoryItem', bookCategory_id=bookCategory_id))
+        return redirect(url_for('showItem', category_id=category_id))
     else:
+        return render_template('edititem.html', category_id=category_id, item_id=item_id, item=editedItem)
 
-        return render_template(
-            'edititem.html', bookCategory_id=bookCategory_id, bookItem_id=item_id, bookItem=editedItem)
-    # return This page is for editing Book item
 
 # Delete a menu item
-@app.route('/bookCategory/<int:bookCategory_id>/item/<int:bookItem_id>/delete', methods=['GET', 'POST'])
-def deleteMenuItem(bookCategory_id, bookItem_id):
+@app.route('/category/<int:category_id>/item/<int:item_id>/delete', methods=['GET', 'POST'])
+def deleteItem(category_id, item_id):
     if 'username' not in login_session:
         return redirect('/login')
-    bookCategory = session.query(BookCategory).filter_by(id=bookCategory_id).one()
-    itemDelete = session.query(cbookItem).filter_by(id=bookItem_id).one()
-    if login_session['user_id'] != bookCategory.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to delete Book items to this Category. Please create your own Book in order to delete items.');}</script><body onload='myFunction()'>"
+    category = session.query(Category).filter_by(id=category_id).one()
+    itemToDelete = session.query(Item).filter_by(id=item_id).one()
+    if login_session['user_id'] != category.user_id:
+        return "<script>function myFunction() {alert('You are not authorized to delete Book items.');}</script><body onload='myFunction()'>"
     if request.method == 'POST':
-        session.delete(itemDelete)
+        session.delete(itemToDelete)
         session.commit()
-        flash('Menu Item Successfully Deleted')
-        return redirect(url_for('showCategoryItem', bookCategory_id=bookCategory_id))
+        flash('Book Item Successfully Deleted')
+        return redirect(url_for('showItem', category_id=category_id))
     else:
-        return render_template('deleteItem.html', bookItem=itemDelete)
-    # return "This page is for deleting item
+        return render_template('deleteItem.html', item=itemToDelete)
 
-# Disconnect based on provider - showBookCategory
-@app.route('/disconnect')
-def disconnect():
-    if 'provider' in login_session:
-        if login_session['provider'] == 'google':
-            gdisconnect()
-            del login_session['gplus_id']
-            del login_session['access_token']
-        flash("You have successfully been logged out.")
-        return redirect(url_for('showBookCategory'))
-    else:
-        flash("You were not logged in")
-        return redirect(url_for('showBookCategory'))
+
+
 
 
 if __name__ == '__main__':
