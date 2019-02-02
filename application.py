@@ -256,9 +256,11 @@ def showItem(category_id):
                 permissions.append(False)
 
     if 'username' not in login_session:
-        return render_template('publicitem.html', items=items, category=category)
+        return render_template('publicitem.html', items=items,
+                               category=category)
     else:
-        return render_template('items.html', items=items, permissions=permissions, category=category)
+        return render_template('items.html', items=items,
+                               permissions=permissions, category=category)
 
 
 # Create a new Book item
@@ -275,21 +277,27 @@ def newBookItem():
         session.add(newItem)
         session.commit()
         flash('New Book %s Item Successfully Created' % (newItem.title))
-        return redirect(url_for('showItem', category_id=request.form['category']))
+        return redirect(url_for('showItem',
+                                category_id=request.form['category']))
     else:
         return render_template('newitem.html', categories=categories)
 
 # Edit a menu item
 
 
-@app.route('/category/<int:category_id>/item/<int:item_id>/edit', methods=['GET', 'POST'])
+@app.route('/category/<int:category_id>/item/<int:item_id>/edit',
+           methods=['GET', 'POST'])
 def editItem(category_id, item_id):
     if 'username' not in login_session:
         return redirect('/login')
-    editedItem = session.query(Item).filter_by(category_id=category_id, id=item_id).one()
+    editedItem = session.query(Item).filter_by(category_id=category_id,
+                                               id=item_id).one()
     if request.method == 'POST':
-        if (request.form['title'] and request.form['author'] and request.form['category']):
-            category = session.query(Category).filter_by(name=request.form['category']).one()
+        if (request.form['title'] and
+                request.form['author'] and
+                request.form['category']):
+            category = session.query(Category).
+            filter_by(name=request.form['category']).one()
             editedItem.title = request.form['title']
             editedItem.author = request.form['author']
             editedItem.category = category
@@ -301,11 +309,13 @@ def editItem(category_id, item_id):
         if editedItem.user_id != login_session['user_id']:
             return redirect(url_for('showcategories'))
         categories = session.query(Category).all()
-        return render_template('edititem.html', item=editedItem, categories=categories)
+        return render_template('edititem.html', item=editedItem,
+                               categories=categories)
 
 
 # Delete a Book item
-@app.route('/category/<int:category_id>/item/<int:item_id>/delete', methods=['GET', 'POST'])
+@app.route('/category/<int:category_id>/item/<int:item_id>/delete',
+           methods=['GET', 'POST'])
 def deleteItem(category_id, item_id):
     if 'username' not in login_session:
         return redirect('/login')
@@ -317,9 +327,12 @@ def deleteItem(category_id, item_id):
                 session.delete(itemDelete)
                 session.commit()
                 flash('Deleted')
-                return redirect(url_for('showcategories', category_id=category_id))
+                return redirect(url_for('showcategories',
+                                category_id=category_id))
             else:
-                return render_template('deleteItem.html', category_id=category_id, item_id=item_id, item=itemDelete)
+                return render_template('deleteItem.html',
+                                       category_id=category_id,
+                                       item_id=item_id, item=itemDelete)
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
