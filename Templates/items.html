@@ -4,18 +4,6 @@
 	<div class="row divider green">
 		<div class="col-md-12"></div>
 	</div>
-	<div class="row banner menu">
-		<div class="col-md-11 col-md-offset-1 padding-none">
-			<h1>{{ category.name }}
-			<figure class="creator">
-				<img src="{{ url_for('static', filename='blank_user.gif') }}">
-				<figcaption>Menu creator's name goes here</figcaption>
-			</figure>
-			</h1>
-
-		</div>
-	</div>
-
 <div class = 'flash'>
 		      {% with messages = get_flashed_messages() %}
       {% if messages %}

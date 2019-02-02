@@ -1,5 +1,13 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    jsonify,
+    url_for,
+    flash
+)
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, Item, User
@@ -22,7 +30,8 @@ APPLICATION_NAME = "ItemCatalog"
 
 
 # Connect to Database and create database session
-engine = create_engine('sqlite:///database_setup.db?check_same_thread=False', poolclass=SingletonThreadPool)
+engine = create_engine('sqlite:///database_setup.db?check_same_thread=False',
+                       poolclass=SingletonThreadPool)
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -161,6 +170,7 @@ def getUserID(email):
     except:
         return None
 
+
 # DISCONNECT - Revoke a current user's token and reset their login_session
 @app.route('/gdisconnect')
 def gdisconnect():
@@ -174,7 +184,7 @@ def gdisconnect():
     print 'In gdisconnect access token is %s', access_token
     print 'User name is: '
     print login_session['username']
-    print 'hlkeakfkjkkkkk',login_session['access_token']
+    print 'hlkeakfkjkkkkk', login_session['access_token']
     url = ('https://accounts.google.com/o/oauth2/revoke?token=%s'
            % login_session['access_token'])
     h = httplib2.Http()
@@ -197,6 +207,7 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+
 # JSON APIs to view  Information
 @app.route('/category/<int:category_id>/item/JSON')
 def categoryJSON(category_id):
@@ -213,7 +224,7 @@ def itemJSON(category_id, item_id):
 
 @app.route('/category/JSON')
 def categoriesJSON():
-    categories = session.query(categories).all()
+    categories = session.query(Category).all()
     return jsonify(categories=[c.serialize for c in categories])
 
 
@@ -237,8 +248,8 @@ def showItem(category_id):
     permissions = []
     items = session.query(Item).filter_by(
         category_id=category_id).all()
-    if login_session['user_id']:
-        for count in range(0,len(items)):
+    if 'username' in login_session:
+        for count in range(0, len(items)):
             if items[count].user_id == login_session['user_id']:
                 permissions.append(True)
             else:
@@ -247,7 +258,7 @@ def showItem(category_id):
     if 'username' not in login_session:
         return render_template('publicitem.html', items=items, category=category)
     else:
-        return render_template('items.html', items=items,permissions=permissions, category=category)
+        return render_template('items.html', items=items, permissions=permissions, category=category)
 
 
 # Create a new Book item
@@ -257,21 +268,25 @@ def newBookItem():
         return redirect('/login')
     categories = session.query(Category).all()
     if request.method == 'POST':
-        newItem = Item(title=request.form['title'], author=request.form['author'], category_id=request.form['category'], user_id=login_session['user_id'])
+        newItem = Item(title=request.form['title'],
+                       author=request.form['author'],
+                       category_id=request.form['category'],
+                       user_id=login_session['user_id'])
         session.add(newItem)
         session.commit()
         flash('New Book %s Item Successfully Created' % (newItem.title))
         return redirect(url_for('showItem', category_id=request.form['category']))
     else:
-        return render_template('newitem.html', categories= categories)
+        return render_template('newitem.html', categories=categories)
 
 # Edit a menu item
+
 
 @app.route('/category/<int:category_id>/item/<int:item_id>/edit', methods=['GET', 'POST'])
 def editItem(category_id, item_id):
     if 'username' not in login_session:
         return redirect('/login')
-    editedItem = session.query(Item).filter_by(category_id=category_id,id=item_id).one()
+    editedItem = session.query(Item).filter_by(category_id=category_id, id=item_id).one()
     if request.method == 'POST':
         if (request.form['title'] and request.form['author'] and request.form['category']):
             category = session.query(Category).filter_by(name=request.form['category']).one()
@@ -288,6 +303,7 @@ def editItem(category_id, item_id):
         categories = session.query(Category).all()
         return render_template('edititem.html', item=editedItem, categories=categories)
 
+
 # Delete a Book item
 @app.route('/category/<int:category_id>/item/<int:item_id>/delete', methods=['GET', 'POST'])
 def deleteItem(category_id, item_id):
@@ -296,13 +312,14 @@ def deleteItem(category_id, item_id):
     else:
         itemDelete = session.query(Item).filter_by(id=item_id).one()
         if itemDelete.user_id == login_session['user_id']:
+            flash('Book Item Successfully')
             if request.method == 'POST':
                 session.delete(itemDelete)
                 session.commit()
-                flash('Book Item Successfully Deleted')
+                flash('Deleted')
                 return redirect(url_for('showcategories', category_id=category_id))
             else:
-                return render_template('deleteItem.html',category_id=category_id, item_id=item_id, item=itemDelete)
+                return render_template('deleteItem.html', category_id=category_id, item_id=item_id, item=itemDelete)
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
