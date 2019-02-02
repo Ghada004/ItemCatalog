@@ -17,7 +17,9 @@
 					<input type ="text" maxlength="100" class="form-control" name="title" required value="{{item.title }}">
 
 					<label for="description">Author:</label>
-					<input class="form-control" maxlength="250" rows="3" name="author"  required value="{{item.author}}"></input>
+
+					<input class="form-control" maxlength="250" rows="3" name="author" required value="{{item.author}}"></input>
+
 					<select name="category">
 						{% for category in categories %}
 						<option> {{category.name }} </option>
