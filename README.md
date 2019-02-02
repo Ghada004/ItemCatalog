@@ -34,9 +34,7 @@ Facebook / Google Login
 
 4/ [Python]( https://www.python.org)
 
-## Database file
 
-Download the [newsdata.sql](https://www.dropbox.com/s/dwwdrerml1nf0mf/newsdata.sql?dl=0)
 
 
 ## How you can RUN this project?
