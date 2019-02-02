@@ -18,12 +18,11 @@ I learned how to develop a RESTful web application using the Python framework Fl
 Python
 HTML
 CSS
-Bootstrap
 Flask
 Jinja2
 SQLAchemy
 OAuth
-Facebook / Google Login
+Google Login
 
 ## What you need to RUN?
 1/ [Vagrant](https://www.vagrantup.com/downloads.htmlb.VirtualMachine)
