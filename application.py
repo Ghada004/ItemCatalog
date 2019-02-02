@@ -219,7 +219,7 @@ def categoryJSON(category_id):
 @app.route('/category/<int:category_id>/item/<int:item_id>/JSON')
 def itemJSON(category_id, item_id):
     item = session.query(Item).filter_by(id=item_id).one()
-    return jsonify(Item=Item.serialize)
+    return jsonify(Item=item.serialize)
 
 
 @app.route('/category/JSON')
