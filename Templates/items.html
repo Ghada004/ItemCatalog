@@ -34,7 +34,7 @@
 		<div class="col-md-11 padding-none">
 			<a href="{{url_for('newBookItem')}}">
 				<button class="btn btn-default" id="new-menu-item">
-					<span class="glyphicon glyphicon-glass" aria-hidden="true"></span>Add Item
+					<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>Add Item
 				</button>
 			</a>
 		</div>
@@ -51,8 +51,18 @@
 											<h3>{{items[i].title}}</h3>
 											<p>{{items[i].author}}</p>
 											{% if permissions[i] == True %}
-											<button> Edit </button>
-											<button> Delete </button>
+
+											<a href="{{url_for('editItem', category_id = category.id, item_id = items[i].id)}}">
+											<button class="btn btn-default">
+												Edit
+											</button>
+										</a>
+												<a href="{{url_for('deleteItem', category_id = category.id, item_id = items[i].id)}}">
+												<button class="btn btn-default">
+													Delete
+												</button>
+											</a>
+
 											{% endif %}
 										</div>
 								{% endfor %}

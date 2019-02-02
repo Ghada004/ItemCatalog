@@ -271,43 +271,38 @@ def newBookItem():
 def editItem(category_id, item_id):
     if 'username' not in login_session:
         return redirect('/login')
-    editedItem = session.query(Item).filter_by(id=item_id).one()
-    category = session.query(Category).filter_by(id=category_id).one()
-    if login_session['user_id'] != category.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to edit Book items.');}</script><body onload='myFunction()'>"
+    editedItem = session.query(Item).filter_by(category_id=category_id,id=item_id).one()
     if request.method == 'POST':
-        if request.form['title']:
+        if (request.form['title'] and request.form['author'] and request.form['category']):
+            category = session.query(Category).filter_by(name=request.form['category']).one()
             editedItem.title = request.form['title']
-        if request.form['author']:
-            editedItem.description = request.form['author']
-        session.add(editedItem)
-        session.commit()
-        flash('Book Item Successfully Edited')
-        return redirect(url_for('showItem', category_id=category_id))
+            editedItem.author = request.form['author']
+            editedItem.category = category
+            session.add(editedItem)
+            flash('Category Successfully Edited %s' % editedItem.title)
+            session.commit()
+            return redirect(url_for('showcategories'))
     else:
-        return render_template('edititem.html', category_id=category_id, item_id=item_id, item=editedItem)
+        if editedItem.user_id != login_session['user_id']:
+            return redirect(url_for('showcategories'))
+        categories = session.query(Category).all()
+        return render_template('edititem.html', item=editedItem, categories=categories)
 
-
-# Delete a menu item
+# Delete a Book item
 @app.route('/category/<int:category_id>/item/<int:item_id>/delete', methods=['GET', 'POST'])
 def deleteItem(category_id, item_id):
     if 'username' not in login_session:
         return redirect('/login')
-    category = session.query(Category).filter_by(id=category_id).one()
-    itemToDelete = session.query(Item).filter_by(id=item_id).one()
-    if login_session['user_id'] != category.user_id:
-        return "<script>function myFunction() {alert('You are not authorized to delete Book items.');}</script><body onload='myFunction()'>"
-    if request.method == 'POST':
-        session.delete(itemToDelete)
-        session.commit()
-        flash('Book Item Successfully Deleted')
-        return redirect(url_for('showItem', category_id=category_id))
     else:
-        return render_template('deleteItem.html', item=itemToDelete)
-
-
-
-
+        itemDelete = session.query(Item).filter_by(id=item_id).one()
+        if itemDelete.user_id == login_session['user_id']:
+            if request.method == 'POST':
+                session.delete(itemDelete)
+                session.commit()
+                flash('Book Item Successfully Deleted')
+                return redirect(url_for('showcategories', category_id=category_id))
+            else:
+                return render_template('deleteItem.html',category_id=category_id, item_id=item_id, item=itemDelete)
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
