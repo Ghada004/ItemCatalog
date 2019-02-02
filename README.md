@@ -2,7 +2,7 @@
 Item Catalog Project
 
 
-# A Udacity FSND project. (Item Catalog)
+# A Udacity FSND project. 
 
 # Project Overview
 
