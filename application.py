@@ -294,9 +294,9 @@ def editItem(category_id, item_id):
                                                id=item_id).one()
     if request.method == 'POST':
         if (request.form['title'] and
-                request.form['author'] and
+            request.form['author'] and
                 request.form['category']):
-            category = session.query(Category).
+            category = session.query(Category).\
             filter_by(name=request.form['category']).one()
             editedItem.title = request.form['title']
             editedItem.author = request.form['author']
